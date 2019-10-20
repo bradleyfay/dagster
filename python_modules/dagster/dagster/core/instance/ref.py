@@ -4,7 +4,8 @@ from collections import namedtuple
 import yaml
 
 from dagster import check
-from dagster.core.serdes import ConfigurableClassData, whitelist_for_serdes
+from dagster.core.serdes import whitelist_for_serdes
+from dagster.core.types.configurable_plugin import ConfigurablePluginData
 
 from .config import DAGSTER_CONFIG_YAML_FILENAME, dagster_feature_set, dagster_instance_config
 
@@ -23,9 +24,9 @@ def _event_logs_directory(base):
 
 def configurable_class_data_or_default(config_value, field_name, default):
     if config_value.get(field_name):
-        return ConfigurableClassData(
+        return ConfigurablePluginData(
             config_value[field_name]['module'],
-            config_value[field_name]['class'],
+            config_value[field_name]['plugin'],
             yaml.dump(config_value[field_name]['config'], default_flow_style=False),
         )
     return default
@@ -50,16 +51,16 @@ class InstanceRef(
             self,
             feature_set=check.opt_list_param(feature_set, 'feature_set'),
             local_artifact_storage_data=check.inst_param(
-                local_artifact_storage_data, 'local_artifact_storage_data', ConfigurableClassData
+                local_artifact_storage_data, 'local_artifact_storage_data', ConfigurablePluginData
             ),
             run_storage_data=check.inst_param(
-                run_storage_data, 'run_storage_data', ConfigurableClassData
+                run_storage_data, 'run_storage_data', ConfigurablePluginData
             ),
             event_storage_data=check.inst_param(
-                event_storage_data, 'event_storage_data', ConfigurableClassData
+                event_storage_data, 'event_storage_data', ConfigurablePluginData
             ),
             compute_logs_data=check.inst_param(
-                compute_logs_data, 'compute_logs_data', ConfigurableClassData
+                compute_logs_data, 'compute_logs_data', ConfigurablePluginData
             ),
         )
 
@@ -71,9 +72,9 @@ class InstanceRef(
         local_artifact_storage_data = configurable_class_data_or_default(
             config_value,
             'local_artifact_storage',
-            ConfigurableClassData(
+            ConfigurablePluginData(
                 'dagster.core.storage.root',
-                'LocalArtifactStorage',
+                'local_artifact_storage_configurable_plugin',
                 yaml.dump({'base_dir': base_dir}, default_flow_style=False),
             ),
         )
@@ -81,9 +82,9 @@ class InstanceRef(
         run_storage_data = configurable_class_data_or_default(
             config_value,
             'run_storage',
-            ConfigurableClassData(
+            ConfigurablePluginData(
                 'dagster.core.storage.sqlite_run_storage',
-                'SqliteRunStorage',
+                'sqlite_run_storage_configurable_plugin',
                 yaml.dump({'base_dir': _runs_directory(base_dir)}, default_flow_style=False),
             ),
         )
@@ -91,9 +92,9 @@ class InstanceRef(
         event_storage_data = configurable_class_data_or_default(
             config_value,
             'event_log_storage',
-            ConfigurableClassData(
+            ConfigurablePluginData(
                 'dagster.core.storage.event_log',
-                'SqliteEventLogStorage',
+                'sqlite_event_log_storage_configurable_plugin',
                 yaml.dump({'base_dir': _event_logs_directory(base_dir)}, default_flow_style=False),
             ),
         )
@@ -101,9 +102,9 @@ class InstanceRef(
         compute_logs_data = configurable_class_data_or_default(
             config_value,
             'compute_logs',
-            ConfigurableClassData(
+            ConfigurablePluginData(
                 'dagster.core.storage.local_compute_log_manager',
-                'LocalComputeLogManager',
+                'local_compute_log_manager_configurable_plugin',
                 yaml.dump(
                     {'base_dir': _compute_logs_directory(base_dir)}, default_flow_style=False
                 ),
@@ -117,19 +118,3 @@ class InstanceRef(
             event_storage_data=event_storage_data,
             compute_logs_data=compute_logs_data,
         )
-
-    @property
-    def local_artifact_storage(self):
-        return self.local_artifact_storage_data.rehydrate()
-
-    @property
-    def run_storage(self):
-        return self.run_storage_data.rehydrate()
-
-    @property
-    def event_storage(self):
-        return self.event_storage_data.rehydrate()
-
-    @property
-    def compute_logs(self):
-        return self.compute_logs_data.rehydrate()

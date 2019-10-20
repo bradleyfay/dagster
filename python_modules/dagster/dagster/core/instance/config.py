@@ -14,6 +14,13 @@ def dagster_instance_config(base_dir, config_filename=DAGSTER_CONFIG_YAML_FILENA
     dagster_config_type = define_dagster_config_cls().inst()
     dagster_config = evaluate_config(dagster_config_type, dagster_config_dict)
     if not dagster_config.success:
+
+        # Try old scheme
+
+        # if success, rewrite it
+
+        # retry parse
+
         raise DagsterInvalidConfigError(None, dagster_config.errors, dagster_config_dict)
     return dagster_config.value
 
@@ -29,7 +36,7 @@ def config_field_for_configurable_class(name, **field_opts):
     return Field(
         SystemNamedDict(
             name,
-            {'module': Field(String), 'class': Field(String), 'config': Field(PermissiveDict())},
+            {'module': Field(String), 'plugin': Field(String), 'config': Field(PermissiveDict())},
         ),
         **field_opts
     )

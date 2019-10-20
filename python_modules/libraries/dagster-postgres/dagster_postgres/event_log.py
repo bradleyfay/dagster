@@ -8,16 +8,10 @@ from dagster_postgres.utils import get_conn
 from six.moves.queue import Empty
 
 from dagster import check
-from dagster.core.definitions.environment_configs import SystemNamedDict
 from dagster.core.events.log import EventRecord
-from dagster.core.serdes import (
-    ConfigurableClass,
-    ConfigurableClassData,
-    deserialize_json_to_dagster_namedtuple,
-    serialize_dagster_namedtuple,
-)
+from dagster.core.serdes import deserialize_json_to_dagster_namedtuple, serialize_dagster_namedtuple
 from dagster.core.storage.event_log import WatchableEventLogStorage
-from dagster.core.types import Field, String
+from dagster.core.types import Dict, Field, String, configurable_plugin
 
 from .pynotify import await_pg_notifications
 
@@ -43,25 +37,17 @@ CHANNEL_NAME = 'run_events'
 WATCHER_POLL_INTERVAL = 0.2
 
 
-class PostgresEventLogStorage(WatchableEventLogStorage, ConfigurableClass):
-    def __init__(self, postgres_url, inst_data=None):
+@configurable_plugin(Dict({'postgres_url': Field(String)}))
+def postgres_event_log_storage_configurable_plugin(plugin_config):
+    return PostgresEventLogStorage(plugin_config['postgres_url'])
+
+
+class PostgresEventLogStorage(WatchableEventLogStorage):
+    def __init__(self, postgres_url):
         self.conn_string = check.str_param(postgres_url, 'postgres_url')
         self._event_watcher = create_event_watcher(self.conn_string)
         conn = get_conn(self.conn_string)
         conn.cursor().execute(CREATE_EVENT_LOG_SQL)
-        self._inst_data = check.opt_inst_param(inst_data, 'inst_data', ConfigurableClassData)
-
-    @property
-    def inst_data(self):
-        return self._inst_data
-
-    @classmethod
-    def config_type(cls):
-        return SystemNamedDict('PostgresRunStorageConfig', {'postgres_url': Field(String)})
-
-    @staticmethod
-    def from_config_value(inst_data, config_value, **kwargs):
-        return PostgresEventLogStorage(inst_data=inst_data, **dict(config_value, **kwargs))
 
     @staticmethod
     def create_clean_storage(conn_string):
