@@ -70,7 +70,7 @@ def test_init_compute_log_with_bad_config_module():
     with seven.TemporaryDirectory() as tmpdir_path:
         with open(os.path.join(tmpdir_path, 'dagster.yaml'), 'w') as fd:
             yaml.dump(
-                {'compute_logs': {'module': 'flargh', 'class': 'Woble', 'config': {}}},
+                {'compute_logs': {'module': 'flargh', 'plugin': 'Woble', 'config': {}}},
                 fd,
                 default_flow_style=False,
             )

@@ -29,7 +29,7 @@ def config_field_for_configurable_class(name, **field_opts):
     return Field(
         SystemNamedDict(
             name,
-            {'module': Field(String), 'class': Field(String), 'config': Field(PermissiveDict())},
+            {'module': Field(String), 'plugin': Field(String), 'config': Field(PermissiveDict())},
         ),
         **field_opts
     )

@@ -9,6 +9,7 @@ from .config_schema import (
     output_materialization_config,
     output_selector_schema,
 )
+from .configurable_plugin import configurable_plugin
 from .field import Field
 from .field_utils import Dict, NamedDict, NamedSelector, PermissiveDict, Selector
 from .python_dict import PythonDict

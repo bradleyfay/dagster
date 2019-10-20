@@ -1,11 +1,11 @@
 run_storage:
   module: dagster_postgres.run_storage
-  class: PostgresRunStorage
+  plugin: PostgresRunStorageConfigPlugin
   config:
     postgres_url: "postgresql://{username}:{password}@{host}:5432/{database}"
 
 event_log_storage:
   module: dagster_postgres.event_log
-  class: PostgresEventLogStorage
+  plugin: postgres_event_log_storage_configurable_plugin
   config:
     postgres_url: "postgresql://{username}:{password}@{host}:5432/{database}"

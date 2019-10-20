@@ -31,7 +31,7 @@ In general, you can tell Dagster which class to use for, e.g., run storage by wr
 ```
 run_storage:
   module: my_very_awesome_module.run_storage
-  class: AwesomeRunStorage
+  plugin: awesome_run_storage_plugin
   config:
     secret_word: "quux"
 ```
@@ -51,13 +51,13 @@ needed to target your own local or remote Postgres instance), and then just star
 ```
 run_storage:
   module: dagster_postgres.run_storage
-  class: PostgresRunStorage
+  plugin: postgres_run_storage_configurable_plugin
   config:
     postgres_url: "postgresql://user:password@instance.us-west-1.rds.amazonaws.com:5432/db_name"
 
 event_log_storage:
   module: dagster_postgres.event_log
-  class: PostgresEventLogStorage
+  plugin: postgres_event_log_storage_configurable_plugin
   config:
     postgres_url: "postgresql://user:password@instance.us-west-1.rds.amazonaws.com:5432/db_name"
 ```

@@ -6,8 +6,7 @@ from watchdog.observers.polling import PollingObserver
 
 from dagster import check
 from dagster.core.definitions.environment_configs import SystemNamedDict
-from dagster.core.serdes import ConfigurableClass, ConfigurableClassData
-from dagster.core.types import Field, String
+from dagster.core.types import Field, String, configurable_plugin
 from dagster.utils import ensure_dir, touch_file
 
 from .compute_log_manager import (
@@ -23,23 +22,17 @@ WATCHDOG_POLLING_TIMEOUT = 2.5
 IO_TYPE_EXTENSION = {ComputeIOType.STDOUT: 'out', ComputeIOType.STDERR: 'err'}
 
 
-class LocalComputeLogManager(ComputeLogManager, ConfigurableClass):
-    def __init__(self, base_dir, inst_data=None):
+@configurable_plugin(
+    SystemNamedDict('SqliteEventLogStorageConfigPlugin', {'base_dir': Field(String)})
+)
+def local_compute_log_manager_configurable_plugin(plugin_config):
+    return LocalComputeLogManager(base_dir=plugin_config['base_dir'])
+
+
+class LocalComputeLogManager(ComputeLogManager):
+    def __init__(self, base_dir):
         self._base_dir = base_dir
         self._subscription_manager = LocalComputeLogSubscriptionManager(self)
-        self._inst_data = check.opt_inst_param(inst_data, 'inst_data', ConfigurableClassData)
-
-    @property
-    def inst_data(self):
-        return self._inst_data
-
-    @classmethod
-    def config_type(cls):
-        return SystemNamedDict('SqliteEventLogStorageConfig', {'base_dir': Field(String)})
-
-    @staticmethod
-    def from_config_value(inst_data, config_value, **kwargs):
-        return LocalComputeLogManager(inst_data=inst_data, **dict(config_value, **kwargs))
 
     def _run_directory(self, run_id):
         return os.path.join(self._base_dir, run_id, 'compute_logs')
