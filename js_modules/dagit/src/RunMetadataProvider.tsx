@@ -125,7 +125,7 @@ function itemsForMetadataEntries(
           text: metadataEntry.label,
           actionText: "[Show Metadata]",
           action: IStepDisplayActionType.SHOW_IN_MODAL,
-          actionValue: metadataEntry.mdString
+          actionValue: metadataEntry.md_str
         });
 
         break;
@@ -274,7 +274,7 @@ export class RunMetadataProvider extends React.Component<
           text
         }
         ... on EventMarkdownMetadataEntry {
-          mdString
+          md_str
         }
       }
 

@@ -60,7 +60,7 @@ export class MetadataEntry extends React.Component<{
           text
         }
         ... on EventMarkdownMetadataEntry {
-          mdString
+          md_str
         }
       }
     `
@@ -125,7 +125,7 @@ export class MetadataEntry extends React.Component<{
         return entry.text;
       case "EventMarkdownMetadataEntry":
         return (
-          <MarkdownMetadataLink title={entry.label} mdString={entry.mdString} />
+          <MarkdownMetadataLink title={entry.label} md_str={entry.md_str} />
         );
       default:
         return assertUnreachable(entry);
@@ -135,7 +135,7 @@ export class MetadataEntry extends React.Component<{
 
 class MarkdownMetadataLink extends React.Component<{
   title: string;
-  mdString: string;
+  md_str: string;
 }> {
   state = { isExpanded: false };
   onView = () => {
@@ -146,7 +146,7 @@ class MarkdownMetadataLink extends React.Component<{
   };
 
   render() {
-    const { mdString, title } = this.props;
+    const { md_str, title } = this.props;
     const { isExpanded } = this.state;
     return (
       <>
@@ -163,7 +163,7 @@ class MarkdownMetadataLink extends React.Component<{
             isOpen={true}
           >
             <MarkdownMetadataExpanded>
-              <ReactMarkdown source={mdString} />
+              <ReactMarkdown source={md_str} />
             </MarkdownMetadataExpanded>
 
             <div className={Classes.DIALOG_FOOTER}>
