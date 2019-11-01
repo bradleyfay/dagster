@@ -1,3 +1,4 @@
+import abc
 from collections import namedtuple
 
 import six
@@ -106,13 +107,14 @@ class ConfigType(object):
 # Scalars, Composites, Selectors, Lists, Optional, Any
 
 
-class ConfigScalar(ConfigType):
+class ConfigScalar(six.with_metaclass(abc.ABCMeta, ConfigType)):
     @property
     def is_scalar(self):
         return True
 
-    def is_config_scalar_valid(self, _config_value):
-        check.not_implemented('must implement')
+    @abc.abstractmethod
+    def is_config_scalar_valid(self, config_value):
+        '''Must be implemented by subclasses of ConfigScalar.'''
 
 
 class ConfigList(ConfigType):
@@ -165,17 +167,7 @@ class ConfigAny(ConfigType):
         return True
 
 
-class BuiltinConfigAny(ConfigAny):
-    def __init__(self, description=None):
-        super(BuiltinConfigAny, self).__init__(
-            key=type(self).__name__,
-            name=type(self).__name__,
-            description=description,
-            type_attributes=ConfigTypeAttributes(is_builtin=True),
-        )
-
-
-class BuiltinConfigScalar(ConfigScalar):
+class BuiltinConfigScalar(six.with_metaclass(abc.ABCMeta, ConfigScalar)):
     def __init__(self, description=None):
         super(BuiltinConfigScalar, self).__init__(
             key=type(self).__name__,
@@ -183,6 +175,10 @@ class BuiltinConfigScalar(ConfigScalar):
             description=description,
             type_attributes=ConfigTypeAttributes(is_builtin=True),
         )
+
+    @abc.abstractproperty
+    def is_config_scalar_valid(self, config_value):
+        '''Must be implemented in subclasses'''
 
 
 class Int(BuiltinConfigScalar):

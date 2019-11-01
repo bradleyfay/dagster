@@ -23,6 +23,7 @@ def define_test_enum_type():
 
 def test_config_enums():
     assert evaluate_config(define_test_enum_type(), 'VALUE_ONE').success
+    assert define_test_enum_type().config_values == ['VALUE_ONE']
 
 
 def test_config_enum_error_none():

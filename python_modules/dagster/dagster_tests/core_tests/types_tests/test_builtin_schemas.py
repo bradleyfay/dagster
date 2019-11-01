@@ -1,3 +1,5 @@
+import re
+
 import pytest
 
 from dagster import (
@@ -171,6 +173,31 @@ def test_int_pickle_schema_roundtrip():
         )
 
         assert source_result.result_for_solid('take_int').output_value() == 2
+
+
+def test_int_invalid_schema():
+    with get_temp_file_name() as tmp_file:
+        with pytest.raises(
+            DagsterInvalidConfigError,
+            match=re.escape(
+                'Undefined field "csv" at path root:solids:produce_int:outputs[0]:result'
+            ),
+        ):
+            _execute_pipeline_with_subset(
+                define_test_all_scalars_pipeline(),
+                environment_dict=single_output_env('produce_int', {'csv': {'path': tmp_file}}),
+                solid_subset=['produce_int'],
+            )
+
+    with pytest.raises(
+        DagsterInvalidConfigError,
+        match='Undefined field "csv" at path root:solids:take_int:inputs:num',
+    ):
+        _execute_pipeline_with_subset(
+            define_test_all_scalars_pipeline(),
+            environment_dict=single_input_env('take_int', 'num', {'csv': {'path': 'foo.csv'}}),
+            solid_subset=['take_int'],
+        )
 
 
 def test_string_input_schema_value():

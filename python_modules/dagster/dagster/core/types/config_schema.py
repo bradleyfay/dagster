@@ -1,3 +1,7 @@
+import abc
+
+import six
+
 from dagster import check
 from dagster.core.decorator_utils import (
     split_function_parameters,
@@ -11,12 +15,10 @@ from .config import ConfigType, List, Nullable
 from .wrapping import WrappingListType, WrappingNullableType
 
 
-class InputHydrationConfig:
-    @property
+class InputHydrationConfig(six.with_metaclass(abc.ABCMeta)):
+    @abc.abstractproperty
     def schema_type(self):
-        check.not_implemented(
-            'Must override schema_type in {klass}'.format(klass=type(self).__name__)
-        )
+        '''Subclasses must implement.'''
 
     def construct_from_config_value(self, _context, config_value):
         '''

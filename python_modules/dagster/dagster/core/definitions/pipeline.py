@@ -468,8 +468,8 @@ def _validate_inputs(dependency_structure, solid_dict):
                 ):
                     raise DagsterInvalidDefinitionError(
                         'Input "{input_name}" in solid "{solid_name}" is not connected to '
-                        'the output of a previous solid and can not be hydrated from configuration, '
-                        'creating an impossible to execute pipeline. '
+                        'the output of a previous solid and can not be hydrated from '
+                        'configuration, creating an impossible to execute pipeline. '
                         'Posible solutions are:\n'
                         '  * add a input_hydration_config for the type "{runtime_type}"\n'
                         '  * connect "{input_name}" to the output of another solid\n'.format(

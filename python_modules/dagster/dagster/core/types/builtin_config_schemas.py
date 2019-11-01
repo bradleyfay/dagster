@@ -22,17 +22,18 @@ def define_builtin_scalar_input_schema(scalar_name, config_scalar_type):
         )
     )
     def _builtin_input_schema(_context, file_type, file_options):
+        check.invariant(
+            file_type in ['value', 'json', 'pickle'], 'Unsupported key {key}'.format(key=file_type)
+        )
         if file_type == 'value':
             return file_options
         elif file_type == 'json':
             with open(file_options['path'], 'r') as ff:
                 value_dict = seven.json.load(ff)
                 return value_dict['value']
-        elif file_type == 'pickle':
+        else:
             with open(file_options['path'], 'rb') as ff:
                 return pickle.load(ff)
-        else:
-            check.failed('Unsupported key {key}'.format(key=file_type))
 
     return _builtin_input_schema
 
@@ -54,19 +55,21 @@ def define_builtin_scalar_output_schema(scalar_name):
     def _builtin_output_schema(_context, file_type, file_options, runtime_value):
         from dagster.core.events import Materialization
 
+        check.invariant(
+            file_type in ['json', 'pickle'],
+            'Unsupported file type: {file_type}'.format(file_type=file_type),
+        )
         if file_type == 'json':
             json_file_path = file_options['path']
             json_value = seven.json.dumps({'value': runtime_value})
             with open(json_file_path, 'w') as ff:
                 ff.write(json_value)
             return Materialization.file(json_file_path)
-        elif file_type == 'pickle':
+        else:
             pickle_file_path = file_options['path']
             with open(pickle_file_path, 'wb') as ff:
                 pickle.dump(runtime_value, ff)
             return Materialization.file(pickle_file_path)
-        else:
-            check.failed('Unsupported file type: {file_type}'.format(file_type=file_type))
 
     return _builtin_output_schema
 
