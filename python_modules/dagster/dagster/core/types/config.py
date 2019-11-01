@@ -91,6 +91,10 @@ class ConfigType(object):
         return False
 
     @property
+    def is_tuple(self):
+        return False
+
+    @property
     def inner_types(self):
         return []
 
@@ -125,6 +129,22 @@ class ConfigList(ConfigType):
         return [self.inner_type] + self.inner_type.inner_types
 
 
+class ConfigTuple(ConfigType):
+    def __init__(self, inner_type, *args, **kwargs):
+        self.inner_type = check.list_param(inner_type, 'inner_type', of_type=ConfigType)
+        super(ConfigTuple, self).__init__(*args, **kwargs)
+
+    @property
+    def is_tuple(self):
+        return True
+
+    @property
+    def inner_types(self):
+        return self.inner_type + [
+            t for inner_type in self.inner_type for t in inner_type.inner_types
+        ]
+
+
 class ConfigNullable(ConfigType):
     def __init__(self, inner_type, *args, **kwargs):
         self.inner_type = check.inst_param(inner_type, 'inner_type', ConfigType)
@@ -143,6 +163,16 @@ class ConfigAny(ConfigType):
     @property
     def is_any(self):
         return True
+
+
+class BuiltinConfigAny(ConfigAny):
+    def __init__(self, description=None):
+        super(BuiltinConfigAny, self).__init__(
+            key=type(self).__name__,
+            name=type(self).__name__,
+            description=description,
+            type_attributes=ConfigTypeAttributes(is_builtin=True),
+        )
 
 
 class BuiltinConfigScalar(ConfigScalar):

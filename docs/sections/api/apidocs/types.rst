@@ -248,7 +248,7 @@ Built-in types
             ],
             output_defs=[OutputDefinition(dagster_type=String)]
         )
-        def nullable_concat_py2(_, x, y) -> String:
+        def nullable_concat_py2(_, x, y):
             return x + (y or '')
 
 .. attribute:: List
@@ -333,6 +333,53 @@ Built-in types
         def repeat_config(context) -> str:
             return context.solid_config['word'] * context.solid_config['times']
 
+
+.. attribute:: Set
+
+    Use this type for inputs or outputs that are sets. Alias for :py:class:`python:typing.Set`.
+    You may not use this type for config fields.
+
+    You may optionally specify the inner type using the square brackets syntax for Python typing.
+
+    **Examples:**
+
+    .. code-block:: python
+
+        @solid
+        def set_solid(_, set_input: Set[String]) -> List[String]:
+            return sorted([x for x in set_input])
+
+        # Python 2
+        @solid(
+            input_defs=[InputDefinition('set_input', dagster_type=Set[String])],
+            output_defs=[OutputDefinition(List[String])],
+        )
+        def set_solid_py2(_, set_input):
+            return sorted([x for x in set_input])
+
+
+.. attribute:: Tuple
+
+    Use this type for inputs or outputs that are tuples. Alias for :py:class:`python:typing.Tuple`.
+    You may not use this type for config fields.
+
+    You may optionally specify the inner types using the square brackets syntax for Python typing.
+
+    **Examples:**
+
+    .. code-block:: python
+
+        @solid
+        def tuple_solid(_, tuple_input: Tuple[String, Int, Float]) -> List:
+            return [x for x in tuple_input]
+
+        # Python 2
+        @solid(
+            input_defs=[InputDefinition('tuple_input', dagster_type=Tuple[String, Int, Float])],
+            output_defs=[OutputDefinition(List)],
+        )
+        def tuple_solid_py2(_, tuple_input):
+            return [x for x in tuple_input]
 
 -----
 

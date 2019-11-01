@@ -70,6 +70,9 @@ def _evaluate_config(context):
     elif context.config_type.is_list:
         return evaluate_list_config(context)
 
+    elif context.config_type.is_tuple:
+        return evaluate_tuple_config(context)
+
     elif context.config_type.is_nullable:
         if context.config_value is not None:
             return _evaluate_config(context.for_nullable_inner_type())
@@ -307,8 +310,6 @@ def _evaluate_composite_solid_config(context):
 
 
 ## Lists
-
-
 def evaluate_list_config(context):
     check.inst_param(context, 'context', TraversalContext)
     check.param_invariant(context.config_type.is_list, 'list_type')
@@ -320,6 +321,33 @@ def evaluate_list_config(context):
 
     evaluation_results = [
         _evaluate_config(context.for_list(index, item)) for index, item in enumerate(config_value)
+    ]
+
+    success = True
+    values = []
+    errors = []
+    for result in evaluation_results:
+        if result.success:
+            values.append(result.value)
+        else:
+            success = False
+            errors += result.errors
+
+    return EvaluateValueResult(success, values, errors)
+
+
+## Tuples
+def evaluate_tuple_config(context):
+    check.inst_param(context, 'context', TraversalContext)
+    check.param_invariant(context.config_type.is_tuple, 'tuple_type')
+
+    config_value = context.config_value
+
+    if not isinstance(config_value, list):
+        return EvaluateValueResult.for_error(create_list_error(context))
+
+    evaluation_results = [
+        _evaluate_config(context.for_tuple(index, item)) for index, item in enumerate(config_value)
     ]
 
     success = True
