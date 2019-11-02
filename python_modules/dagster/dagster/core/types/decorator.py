@@ -1,7 +1,7 @@
 from dagster import check
 
 from .mapping import register_python_type
-from .runtime import PYTHON_DAGSTER_TYPE_ARGS_DOCSTRING, define_python_dagster_type
+from .runtime import define_python_dagster_type
 
 
 def _decorate_as_dagster_type(
@@ -78,10 +78,43 @@ def dagster_type(
     And it is viewable in dagit and so forth, and you can use the dagster type system
     for configuration, serialization, and metadata emission.
 
-    {args_docstring}
-    '''.format(
-        args_docstring=PYTHON_DAGSTER_TYPE_ARGS_DOCSTRING
-    )
+    Args:
+        python_type (cls): The python type to wrap as a Dagster type.
+        name (Optional[str]): Name of the new Dagster type. If None, the name (__name__) of the
+            python_type will be used. Default: None
+        description (Optional[str]): A user-readable description of the type. Default: None.
+        input_hydration_config (Optional[InputHydrationConfig]): An instance of a class that
+            inherits from :py:class:`InputHydrationConfig <dagster.InputHydrationConfig>` and can
+            map config data to a value of this type. Specify this argument if you will need to shim
+            values of this type using the config machinery. As a rule, you should use the
+            :py:func:`@input_hydration_config <dagster.InputHydrationConfig>` decorator to construct
+            these arguments. Default: None
+        output_materialization_config (Optiona[OutputMaterializationConfig]): An instance of a class
+            that inherits from
+            :py:class:`OutputMaterializationConfig <dagster.OutputMaterializationConfig>` that can
+            persist values of this type. As a rule, you should use the
+            :py:func:`@output_materialization_config <dagster.output_materialization_config>`
+            decorator to construct these arguments. Default: None
+        serialization_strategy (Optional[SerializationStrategy]): An instance of a class that
+            inherits from :py:class:`SerializationStrategy <dagster.SerializationStrategy>`. The
+            default strategy for serializing this value when automatically persisting it between
+            execution steps. You should set this value if the ordinary serialization machinery
+            (e.g., pickle) will not be adequate for this type. Default: None.
+        auto_plugins (Optional[List[TypeStoragePlugin]]): If types must be serialized differently
+            depending on the storage being used for intermediates, they should specify this
+            argument. In these cases the serialization_strategy argument is not sufficient because
+            serialization requires specialized API calls, e.g. to call an s3 API directly instead
+            of using a generic file object. See dagster_pyspark.DataFrame for an example using
+            auto_plugins. Default: None.
+        typecheck_metadata_fn (Optional[Callable[[Any], TypeCheck]]): If specified, this function
+            wil be called to emit metadata when you successfully check a type. The
+            typecheck_metadata_fn will be passed the value being type-checked and should return an
+            instance of :py:class:`TypeCheck <dagster.TypeCheck>`. See dagster_pandas.DataFrame for
+            an example. Default: None.
+        type_check (Optional[Callable[[Any], Any]]): If specified, this function will be called in
+            place of the default isinstance type check. This function should raise Failure if the
+            type check fails, and otherwise pass. Its return value will be ignored.
+    '''
 
     def _with_args(bare_cls):
         check.type_param(bare_cls, 'bare_cls')
@@ -135,10 +168,43 @@ def as_dagster_type(
 
     See dagster_pandas for an example of how to do this.
 
-    {args_docstring}
-    '''.format(
-        args_docstring=PYTHON_DAGSTER_TYPE_ARGS_DOCSTRING
-    )
+    Args:
+        python_type (cls): The python type to wrap as a Dagster type.
+        name (Optional[str]): Name of the new Dagster type. If None, the name (__name__) of the
+            python_type will be used. Default: None
+        description (Optional[str]): A user-readable description of the type. Default: None.
+        input_hydration_config (Optional[InputHydrationConfig]): An instance of a class that
+            inherits from :py:class:`InputHydrationConfig <dagster.InputHydrationConfig>` and can
+            map config data to a value of this type. Specify this argument if you will need to shim
+            values of this type using the config machinery. As a rule, you should use the
+            :py:func:`@input_hydration_config <dagster.InputHydrationConfig>` decorator to construct
+            these arguments. Default: None
+        output_materialization_config (Optiona[OutputMaterializationConfig]): An instance of a class
+            that inherits from
+            :py:class:`OutputMaterializationConfig <dagster.OutputMaterializationConfig>` that can
+            persist values of this type. As a rule, you should use the
+            :py:func:`@output_materialization_config <dagster.output_materialization_config>`
+            decorator to construct these arguments. Default: None
+        serialization_strategy (Optional[SerializationStrategy]): An instance of a class that
+            inherits from :py:class:`SerializationStrategy <dagster.SerializationStrategy>`. The
+            default strategy for serializing this value when automatically persisting it between
+            execution steps. You should set this value if the ordinary serialization machinery
+            (e.g., pickle) will not be adequate for this type. Default: None.
+        auto_plugins (Optional[List[TypeStoragePlugin]]): If types must be serialized differently
+            depending on the storage being used for intermediates, they should specify this
+            argument. In these cases the serialization_strategy argument is not sufficient because
+            serialization requires specialized API calls, e.g. to call an s3 API directly instead
+            of using a generic file object. See dagster_pyspark.DataFrame for an example using
+            auto_plugins. Default: None.
+        typecheck_metadata_fn (Optional[Callable[[Any], TypeCheck]]): If specified, this function
+            wil be called to emit metadata when you successfully check a type. The
+            typecheck_metadata_fn will be passed the value being type-checked and should return an
+            instance of :py:class:`TypeCheck <dagster.TypeCheck>`. See dagster_pandas.DataFrame for
+            an example. Default: None.
+        type_check (Optional[Callable[[Any], Any]]): If specified, this function will be called in
+            place of the default isinstance type check. This function should raise Failure if the
+            type check fails, and otherwise pass. Its return value will be ignored.
+    '''
 
     return _decorate_as_dagster_type(
         bare_cls=check.type_param(existing_type, 'existing_type'),

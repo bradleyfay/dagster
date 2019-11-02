@@ -96,7 +96,11 @@ from dagster.core.types.decorator import as_dagster_type, dagster_type
 from dagster.core.types.marshal import SerializationStrategy
 from dagster.core.types.runtime import RuntimeType, define_python_dagster_type
 from dagster.utils import file_relative_path
-from dagster.utils.test import execute_solid, execute_solids_within_pipeline
+from dagster.utils.test import (
+    execute_solid,
+    execute_solid_within_pipeline,
+    execute_solids_within_pipeline,
+)
 
 from .version import __version__
 
