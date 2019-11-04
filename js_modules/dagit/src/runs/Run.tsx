@@ -21,6 +21,7 @@ import ExecutionStartButton from "../execute/ExecutionStartButton";
 import InfoModal from "../InfoModal";
 import PythonErrorInfo from "../PythonErrorInfo";
 import { RunContext } from "./RunContext";
+import { PipelineRunStatus } from "../types/globalTypes";
 
 import {
   RunPipelineRunEventFragment_ExecutionStepFailureEvent,
@@ -162,7 +163,8 @@ export class Run extends React.Component<IRunProps, IRunState> {
 
   onReexecute = async (
     mutation: MutationFunction<Reexecute, ReexecuteVariables>,
-    stepKey?: string
+    stepKey?: string,
+    resumeRetry?: boolean
   ) => {
     const { run } = this.props;
     if (!run || run.pipeline.__typename === "UnknownPipeline") return;
@@ -182,6 +184,8 @@ export class Run extends React.Component<IRunProps, IRunState> {
       const step = run.executionPlan.steps.find(s => s.key === stepKey);
       if (!step) return;
       variables.executionParams.stepKeys = [stepKey];
+      variables.executionParams.retryRunId = run.runId;
+    } else if (resumeRetry) {
       variables.executionParams.retryRunId = run.runId;
     }
 
@@ -241,6 +245,20 @@ export class Run extends React.Component<IRunProps, IRunState> {
                               <div style={{ minWidth: 6 }} />
                               <CancelRunButton run={run} />
                             </>
+                          ) : null}
+                          {run && run.status === PipelineRunStatus.FAILURE ? (
+                            <ExecutionStartButton
+                              title="Retry"
+                              icon={IconNames.REPEAT}
+                              small={true}
+                              onClick={() =>
+                                this.onReexecute(
+                                  reexecuteMutation,
+                                  undefined,
+                                  true
+                                )
+                              }
+                            />
                           ) : null}
                         </LogsToolbar>
                         <LogsScrollingTable
