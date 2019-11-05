@@ -1,13 +1,13 @@
 from collections import defaultdict
 
 from dagster import check
-from dagster.core.instance import DagsterInstance
 from dagster.core.errors import DagsterInvariantViolationError, DagsterRunNotFoundError
 from dagster.core.events import DagsterEvent, DagsterEventType
 from dagster.core.events.log import EventRecord
 from dagster.core.execution.context.system import SystemPipelineExecutionContext
 from dagster.core.execution.plan.objects import StepOutputHandle
 from dagster.core.execution.plan.plan import ExecutionPlan
+from dagster.core.instance import DagsterInstance
 from dagster.core.storage.object_store import ObjectStoreOperation, ObjectStoreOperationType
 
 

@@ -16,11 +16,11 @@ from dagster.core.definitions.pipeline import ExecutionSelector
 from dagster.core.events import DagsterEventType
 from dagster.core.execution.api import create_execution_plan, execute_plan
 from dagster.core.execution.config import EXECUTION_TIME_KEY
+from dagster.core.execution.memoization import get_retry_steps_from_execution_plan
 from dagster.core.serdes import serialize_dagster_namedtuple
 from dagster.core.storage.compute_log_manager import ComputeIOType
 from dagster.core.storage.pipeline_run import PipelineRun, PipelineRunStatus
 from dagster.utils import merge_dicts
-from dagster.core.execution.memoization import get_retry_steps_from_execution_plan
 
 from .fetch_pipelines import (
     get_dauphin_pipeline_from_selector_or_raise,
