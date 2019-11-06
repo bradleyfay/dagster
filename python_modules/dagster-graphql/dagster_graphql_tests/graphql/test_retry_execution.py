@@ -6,7 +6,7 @@ from .execution_queries import START_PIPELINE_EXECUTION_QUERY
 from .setup import define_context, retry_config
 
 NON_PERSISTENT_INTERMEDIATES_ERROR = (
-    'Cannot perform reexecution with non persistent intermediates manager.'
+    'Cannot perform reexecution with non persistent intermediates manager'
 )
 
 
