@@ -248,7 +248,7 @@ export class Run extends React.Component<IRunProps, IRunState> {
                           ) : null}
                           {run && run.status === PipelineRunStatus.FAILURE ? (
                             <ExecutionStartButton
-                              title="Retry"
+                              title="Resume / Retry"
                               icon={IconNames.REPEAT}
                               small={true}
                               onClick={() =>
