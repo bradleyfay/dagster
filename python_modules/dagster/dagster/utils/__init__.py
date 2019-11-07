@@ -4,6 +4,7 @@ import inspect
 import multiprocessing
 import os
 import re
+import signal
 import subprocess
 import sys
 import tempfile
@@ -18,6 +19,7 @@ from dagster.core.errors import DagsterInvariantViolationError
 from dagster.seven.abc import Mapping
 
 from .subprocess_pdb import ForkedPdb
+from .timing import format_duration, time_execution_scope
 from .yaml_utils import load_yaml_from_glob_list, load_yaml_from_globs, load_yaml_from_path
 
 if sys.version_info > (3,):
@@ -294,3 +296,10 @@ def touch_file(path):
 
 
 pdb = ForkedPdb()
+
+
+def send_interrupt(pid):
+    if os.name == 'nt':
+        os.kill(pid, signal.CTRL_C_EVENT)  # pylint: disable=no-member
+    else:
+        os.kill(pid, signal.SIGINT)

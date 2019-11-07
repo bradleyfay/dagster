@@ -3,7 +3,6 @@ from __future__ import absolute_import
 import abc
 import logging
 import os
-import signal
 import sys
 import time
 
@@ -22,7 +21,7 @@ from dagster.core.events import (
 from dagster.core.events.log import DagsterEventRecord
 from dagster.core.execution.api import execute_run_iterator
 from dagster.core.instance import DagsterInstance
-from dagster.utils import get_multiprocessing_context
+from dagster.utils import get_multiprocessing_context, send_interrupt
 from dagster.utils.error import SerializableErrorInfo, serializable_error_info_from_exc_info
 
 
@@ -305,7 +304,7 @@ class SubprocessExecutionManager(PipelineExecutionManager):
         if not process.is_alive():
             return False
 
-        os.kill(process.pid, signal.SIGINT)
+        send_interrupt(process.pid)
         process.join()
         return True
 

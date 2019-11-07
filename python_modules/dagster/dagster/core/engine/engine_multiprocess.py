@@ -1,5 +1,4 @@
 import os
-import signal
 
 from dagster import check
 from dagster.core.errors import DagsterSubprocessError
@@ -10,7 +9,7 @@ from dagster.core.execution.context.system import SystemPipelineExecutionContext
 from dagster.core.execution.memoization import copy_required_intermediates_for_execution
 from dagster.core.execution.plan.plan import ExecutionPlan
 from dagster.core.instance import DagsterInstance
-from dagster.utils.timing import format_duration, time_execution_scope
+from dagster.utils import format_duration, send_interrupt, time_execution_scope
 
 from .child_process_executor import (
     ChildProcessCommand,
@@ -72,7 +71,7 @@ def execute_step_out_of_process(step_context, step, pid_tracker):
         elif isinstance(ret, KeyboardInterrupt):
             # forward the interrupt to all known processes
             for pid in pid_tracker.keys():
-                os.kill(pid, signal.SIGINT)
+                send_interrupt(pid)
         else:
             check.failed('Unexpected return value from child process {}'.format(type(ret)))
 
