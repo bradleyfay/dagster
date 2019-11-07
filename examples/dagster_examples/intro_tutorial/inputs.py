@@ -25,6 +25,9 @@ def sort_by_calories(context, cereals):
             most_caloric=sorted_cereals[-1]['name']
         )
     )
+    return {
+        'least_caloric': sorted_cereals[0], 'most_caloric': sorted_cereals[-1]
+    }
 
 
 @pipeline
