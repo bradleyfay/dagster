@@ -611,6 +611,16 @@ def resolve_to_runtime_type(dagster_type):
         'Cannot resolve a config type to a runtime type',
     )
 
+    # Test for unhashable objects -- this is if, for instance, someone has passed us an instance of
+    # a dict where they meant to pass dict or Dict, etc.
+    try:
+        hash(dagster_type)
+    except TypeError:
+        raise DagsterInvalidDefinitionError(
+            'Invalid type: dagster_type is not hashable, got {dagster_type}. Did you pass an '
+            'instance of a type instead of the type?'.format(dagster_type=dagster_type)
+        )
+
     dagster_type = remap_python_type(dagster_type)
 
     # do not do in remap because this is runtime system only.
@@ -640,7 +650,14 @@ def resolve_to_runtime_type(dagster_type):
     if isinstance(dagster_type, WrappingNullableType):
         return resolve_to_runtime_nullable(dagster_type)
 
-    check.inst(dagster_type, type, 'Invalid dagster_type')
+    if not isinstance(dagster_type, type):
+        raise DagsterInvalidDefinitionError(
+            'Invalid type: dagster_type is not an instance of "type", got {dagster_type}'.format(
+                dagster_type=dagster_type
+            )
+        )
+
+    check.inst(dagster_type, type)
 
     if issubclass(dagster_type, RuntimeType):
         return dagster_type.inst()
