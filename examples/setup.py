@@ -18,6 +18,7 @@ setup(
     packages=find_packages(exclude=['test']),
     # default supports basic tutorial & toy examples
     install_requires=['dagster'],
+    tests_requires=['pytest-mock'],
     extras_require={
         # full is for running the more realistic demos
         'full': [
