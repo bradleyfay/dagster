@@ -186,6 +186,13 @@ these inputs via config:
    :caption: custom_types_3.py
 
 
+Testing custom types
+^^^^^^^^^^^^^^^^^^^^
+
+As you write your own custom types, you'll also want to set up unit tests that ensure your types
+are doing what you expect them to. Dagster includes a utility function, 
+
+
 Metadata and data quality checks
 --------------------------------
 
