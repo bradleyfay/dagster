@@ -3,7 +3,7 @@ import * as yaml from "yaml";
 import gql from "graphql-tag";
 import styled from "styled-components";
 import { IconNames } from "@blueprintjs/icons";
-import { Colors, Button, Intent } from "@blueprintjs/core";
+import { Colors, Button, Intent, Tooltip, Position } from "@blueprintjs/core";
 import { MutationFunction, Mutation, useMutation } from "react-apollo";
 import ApolloClient from "apollo-client";
 
@@ -29,6 +29,11 @@ import {
 } from "./types/RunPipelineRunEventFragment";
 import { CANCEL_MUTATION } from "./RunUtils";
 import { SharedToaster } from "../Util";
+
+const REEXECUTE_DESCRIPTION =
+  "Re-executes the current pipeline run from scratch";
+const RETRY_DESCRIPTION =
+  "Retries the current pipeline run, reusing intermediate results from the set of successful steps";
 
 interface IRunProps {
   client: ApolloClient<any>;
@@ -234,12 +239,20 @@ export class Run extends React.Component<IRunProps, IRunState> {
                             this.setState({ logsFilter: filter })
                           }
                         >
-                          <ExecutionStartButton
-                            title="Re-execute"
-                            icon={IconNames.REPEAT}
-                            small={true}
-                            onClick={() => this.onReexecute(reexecuteMutation)}
-                          />
+                          <Tooltip
+                            hoverOpenDelay={300}
+                            content={REEXECUTE_DESCRIPTION}
+                            position={Position.BOTTOM}
+                          >
+                            <ExecutionStartButton
+                              title="Re-execute"
+                              icon={IconNames.REPEAT}
+                              small={true}
+                              onClick={() =>
+                                this.onReexecute(reexecuteMutation)
+                              }
+                            />
+                          </Tooltip>
                           {run && run.canCancel ? (
                             <>
                               <div style={{ minWidth: 6 }} />
@@ -247,18 +260,24 @@ export class Run extends React.Component<IRunProps, IRunState> {
                             </>
                           ) : null}
                           {run && run.status === PipelineRunStatus.FAILURE ? (
-                            <ExecutionStartButton
-                              title="Resume / Retry"
-                              icon={IconNames.REPEAT}
-                              small={true}
-                              onClick={() =>
-                                this.onReexecute(
-                                  reexecuteMutation,
-                                  undefined,
-                                  true
-                                )
-                              }
-                            />
+                            <Tooltip
+                              hoverOpenDelay={300}
+                              content={RETRY_DESCRIPTION}
+                              position={Position.BOTTOM}
+                            >
+                              <ExecutionStartButton
+                                title="Resume / Retry"
+                                icon={IconNames.REPEAT}
+                                small={true}
+                                onClick={() =>
+                                  this.onReexecute(
+                                    reexecuteMutation,
+                                    undefined,
+                                    true
+                                  )
+                                }
+                              />
+                            </Tooltip>
                           ) : null}
                         </LogsToolbar>
                         <LogsScrollingTable
