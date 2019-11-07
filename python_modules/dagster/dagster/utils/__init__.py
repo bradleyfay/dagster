@@ -7,6 +7,7 @@ import re
 import subprocess
 import sys
 import tempfile
+import signal
 from collections import namedtuple
 from enum import Enum
 
@@ -19,6 +20,7 @@ from dagster.seven.abc import Mapping
 
 from .subprocess_pdb import ForkedPdb
 from .yaml_utils import load_yaml_from_glob_list, load_yaml_from_globs, load_yaml_from_path
+from .timing import format_duration, time_execution_scope
 
 if sys.version_info > (3,):
     from pathlib import Path  # pylint: disable=import-error
@@ -294,3 +296,10 @@ def touch_file(path):
 
 
 pdb = ForkedPdb()
+
+
+def send_interrupt(pid):
+    if os.name == 'nt':
+        os.kill(pid, signal.CTRL_C_EVENT)
+    else:
+        os.kill(pid, signal.SIGINT)
