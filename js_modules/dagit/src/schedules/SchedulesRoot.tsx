@@ -41,7 +41,6 @@ import cronstrue from "cronstrue";
 import gql from "graphql-tag";
 import { showCustomAlert } from "../CustomAlertProvider";
 import styled from "styled-components";
-import { DataProxy } from "apollo-cache";
 import { copyValue } from "../Util";
 
 const NUM_RUNS_TO_DISPLAY = 10;
@@ -146,7 +145,7 @@ const ScheduleTable: React.FunctionComponent<ScheduleTableProps> = props => {
         </Legend>
       )}
       {props.schedules.map(schedule => (
-        <ScheduleRow schedule={schedule} key={schedule.scheduleId} />
+        <ScheduleRow schedule={schedule} key={schedule.id} />
       ))}
     </div>
   );
@@ -156,7 +155,7 @@ const ScheduleRow: React.FunctionComponent<{
   schedule: SchedulesRootQuery_scheduler_Scheduler_runningSchedules;
 }> = ({ schedule }) => {
   const {
-    scheduleId,
+    id,
     status,
     scheduleDefinition,
     runs,
@@ -199,30 +198,6 @@ const ScheduleRow: React.FunctionComponent<{
   const sortedRuns = sortRuns(runs);
   const mostRecentRun = sortedRuns[0];
 
-  const optimisticUpdateStore = (
-    store: DataProxy,
-    name: string,
-    status: ScheduleStatus
-  ) => {
-    const data: SchedulesRootQuery | null = store.readQuery({
-      query: SCHEDULES_ROOT_QUERY
-    });
-    if (data && data.scheduler.__typename === "Scheduler") {
-      data.scheduler.runningSchedules = data.scheduler.runningSchedules.map(
-        schedule => {
-          if (schedule.scheduleDefinition.name === name) {
-            schedule.status = status;
-          }
-          return schedule;
-        }
-      );
-      store.writeQuery({
-        query: SCHEDULES_ROOT_QUERY,
-        data: data
-      });
-    }
-  };
-
   return (
     <RowContainer key={name}>
       <RowColumn style={{ maxWidth: 60, paddingLeft: 0, textAlign: "center" }}>
@@ -234,15 +209,11 @@ const ScheduleRow: React.FunctionComponent<{
           onChange={() => {
             if (status === ScheduleStatus.RUNNING) {
               stopSchedule({
-                variables: { scheduleName: name },
-                update: store =>
-                  optimisticUpdateStore(store, name, ScheduleStatus.STOPPED)
+                variables: { scheduleName: name }
               });
             } else {
               startSchedule({
-                variables: { scheduleName: name },
-                update: store =>
-                  optimisticUpdateStore(store, name, ScheduleStatus.RUNNING)
+                variables: { scheduleName: name }
               });
             }
           }}
@@ -297,7 +268,7 @@ const ScheduleRow: React.FunctionComponent<{
           <Link
             to={`/runs?q=tag:${encodeURIComponent(
               "dagster/schedule_id"
-            )}=${scheduleId}`}
+            )}=${id}`}
             style={{ verticalAlign: "top" }}
           >
             {" "}
@@ -375,6 +346,7 @@ const START_SCHEDULE_MUTATION = gql`
   mutation StartSchedule($scheduleName: String!) {
     startSchedule(scheduleName: $scheduleName) {
       schedule {
+        id
         status
       }
     }
@@ -385,7 +357,7 @@ const STOP_SCHEDULE_MUTATION = gql`
   mutation StopSchedule($scheduleName: String!) {
     stopRunningSchedule(scheduleName: $scheduleName) {
       schedule {
-        scheduleId
+        id
         status
       }
     }
@@ -400,7 +372,7 @@ export const SCHEDULES_ROOT_QUERY = gql`
       }
       ... on Scheduler {
         runningSchedules {
-          scheduleId
+          id
           scheduleDefinition {
             name
             executionParamsString
