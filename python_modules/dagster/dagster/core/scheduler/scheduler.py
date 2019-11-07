@@ -17,6 +17,56 @@ class ScheduleStatus(Enum):
     ENDED = 'ENDED'
 
 
+def print_scheduler_changes(scheduler_handle, click, print_fn=print, preview=False):
+    changeset = scheduler_handle.get_change_set()
+    if len(changeset) == 0:
+        if preview:
+            print_fn(click.style('No planned changes to schedules.', fg='magenta', bold=True))
+            print_fn(
+                '{num} schedules will remain unchanged'.format(
+                    num=len(scheduler_handle.all_schedule_defs())
+                )
+            )
+        else:
+            print_fn(click.style('No changes to schedules.', fg='magenta', bold=True))
+            print_fn(
+                '{num} schedules unchanged'.format(num=len(scheduler_handle.all_schedule_defs()))
+            )
+        return
+
+    print_fn(
+        click.style(
+            'Planned Schedule Changes:' if preview else 'Schedule Changes:', fg='magenta', bold=True
+        )
+    )
+
+    for change in changeset:
+        change_type, schedule_name, changes = change
+
+        if change_type == "add":
+            print_fn(click.style('  + %s (add)' % schedule_name, fg='green'))
+
+        if change_type == "change":
+            print_fn(click.style('  ~ %s (update)' % schedule_name, fg='yellow'))
+            for change_name, diff in changes:
+                if len(diff) == 2:
+                    old, new = diff
+                    print_fn(
+                        click.style('\t %s: ' % change_name, fg='yellow')
+                        + click.style(old, fg='red')
+                        + " => "
+                        + click.style(new, fg='green')
+                    )
+                else:
+                    print_fn(
+                        click.style('\t %s: ' % change_name, fg='yellow')
+                        + click.style(diff, fg='green')
+                    )
+
+        if change_type == "remove":
+            print_fn(click.style('  - %s (delete)' % schedule_name, fg='red'))
+
+
 def get_schedule_change_set(old_schedules, new_schedule_defs):
     check.list_param(old_schedules, 'old_schedules', Schedule)
     check.list_param(new_schedule_defs, 'new_schedule_defs', ScheduleDefinition)
