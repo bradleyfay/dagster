@@ -8,7 +8,7 @@ import six
 from dagster import DagsterInvariantViolationError, check
 from dagster.cli.load_handle import handle_for_repo_cli_args
 from dagster.core.instance import DagsterInstance, _is_dagster_home_set
-from dagster.core.scheduler import ScheduleStatus
+from dagster.core.scheduler import ScheduleStatus, print_scheduler_changes
 from dagster.utils import DEFAULT_REPOSITORY_YAML_FILENAME
 
 
@@ -62,52 +62,6 @@ def repository_target_argument(f):
     )
 
 
-def print_changes(scheduler_handle, print_fn=print, preview=False):
-    changeset = scheduler_handle.get_change_set()
-    if len(changeset) == 0:
-        if preview:
-            print_fn(click.style('No planned changes to schedules.', fg='magenta', bold=True))
-            print_fn(
-                '{num} schedules will remain unchanged'.format(
-                    num=len(scheduler_handle.all_schedule_defs())
-                )
-            )
-        else:
-            print_fn(click.style('No changes to schedules.', fg='magenta', bold=True))
-            print_fn(
-                '{num} schedules unchanged'.format(num=len(scheduler_handle.all_schedule_defs()))
-            )
-        return
-
-    print_fn(click.style('Planned Changes:' if preview else 'Changes:', fg='magenta', bold=True))
-
-    for change in changeset:
-        change_type, schedule_name, changes = change
-
-        if change_type == "add":
-            print_fn(click.style('  + %s (add)' % schedule_name, fg='green'))
-
-        if change_type == "change":
-            print_fn(click.style('  ~ %s (update)' % schedule_name, fg='yellow'))
-            for change_name, diff in changes:
-                if len(diff) == 2:
-                    old, new = diff
-                    print_fn(
-                        click.style('\t %s: ' % change_name, fg='yellow')
-                        + click.style(old, fg='red')
-                        + " => "
-                        + click.style(new, fg='green')
-                    )
-                else:
-                    print_fn(
-                        click.style('\t %s: ' % change_name, fg='yellow')
-                        + click.style(diff, fg='green')
-                    )
-
-        if change_type == "remove":
-            print_fn(click.style('  - %s (delete)' % schedule_name, fg='red'))
-
-
 @click.command(
     name='preview', help='Preview changes that will be performed by `dagster schedule up'
 )
@@ -126,7 +80,7 @@ def execute_preview_command(cli_args, print_fn):
         print_fn("Scheduler not defined for repository {name}".format(name=repository.name))
         return
 
-    print_changes(scheduler_handle, print_fn, preview=True)
+    print_scheduler_changes(scheduler_handle, click, print_fn, preview=True)
 
 
 @click.command(
@@ -160,7 +114,7 @@ def execute_up_command(preview, cli_args, print_fn):
         print_fn("Scheduler not defined for repository {name}".format(name=repository.name))
         return
 
-    print_changes(scheduler_handle, print_fn, preview=preview)
+    print_scheduler_changes(scheduler_handle, print_fn, preview=preview)
     if preview:
         return
 

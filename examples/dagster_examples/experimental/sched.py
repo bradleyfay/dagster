@@ -23,14 +23,14 @@ def define_scheduler():
 
     log_spew_hourly = ScheduleDefinition(
         name="log_spew_hourly",
-        cron_schedule="0 * * * *",
+        cron_schedule="* * * * *",
         pipeline_name="log_spew",
         environment_dict={"storage": {"filesystem": {}}},
     )
 
     pandas_hello_world_hourly = ScheduleDefinition(
         name="pandas_hello_world_hourly",
-        cron_schedule="0 * * * *",
+        cron_schedule="* * * * *",
         pipeline_name="pandas_hello_world",
         environment_dict={
             "solids": {

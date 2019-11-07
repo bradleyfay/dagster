@@ -5,6 +5,7 @@ import os
 import sys
 import uuid
 
+import click
 import nbformat
 from dagster_graphql.implementation.context import DagsterGraphQLContext
 from dagster_graphql.implementation.pipeline_execution_manager import SubprocessExecutionManager
@@ -23,6 +24,7 @@ from dagster import __version__ as dagster_version
 from dagster import check, seven
 from dagster.core.execution.compute_logs import warn_if_compute_logs_disabled
 from dagster.core.instance import DagsterInstance
+from dagster.core.scheduler import print_scheduler_changes
 from dagster.core.storage.compute_log_manager import ComputeIOType
 
 from .format_error import format_error_with_stack_trace
@@ -167,6 +169,11 @@ def create_app(handle, instance, reloader=None):
 
         python_path = sys.executable
         repository_path = handle.data.repository_yaml
+
+        changeset = scheduler_handle.get_change_set()
+        if len(changeset) > 0:
+            print_scheduler_changes(scheduler_handle, click)
+
         scheduler_handle.up(python_path, repository_path)
 
     app.add_url_rule(
